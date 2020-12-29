@@ -9,11 +9,11 @@ time_format = "%Y-%m-%d %H:%M:%S"
 
 
 def get_job_list():
-    return [job.to_dict() for job in state.job_state_list]
+    return [{**job.to_dict(), 'key': hash(job)} for job in state.job_state_list]
 
 
 def get_node_list():
-    return [node.to_dict() for node in state.node_state_list]
+    return [{**node.to_dict(), 'key': hash(node)} for node in state.node_state_list]
 
 
 def get_job_wait_top(top_num):
@@ -23,7 +23,8 @@ def get_job_wait_top(top_num):
             wait_job_list.append(job)
     return {
         'wait_job_topk': [{'job_name': job.job_name, 'time': job.get_time_delta_sec()} for job in
-                          heapq.nlargest(top_num, wait_job_list, key=lambda x: x.get_time_delta_sec())],
+                          heapq.nlargest(top_num, wait_job_list,
+                                         key=lambda x: x.get_time_delta_sec())],
     }
 
 
@@ -35,7 +36,8 @@ def get_job_run_top(top_num):
 
     return {
         'wait_job_topk': [{'job_name': job.job_name, 'time': job.get_time_delta_sec()} for job in
-                          heapq.nlargest(top_num, run_job_list, key=lambda x: x.get_time_delta_sec())],
+                          heapq.nlargest(top_num, run_job_list,
+                                         key=lambda x: x.get_time_delta_sec())],
     }
 
 
@@ -107,14 +109,20 @@ def get_node_data(date_from, date_to):
             compute_node_stat_data('all', return_data, stat_pec_data)
 
         # 计算平均值
-        stat_pec_data['cpu']['node']['avg'] = stat_pec_data['cpu']['node']['avg'] / len(return_data_dict['info'])
-        stat_pec_data['cpu']['core']['avg'] = stat_pec_data['cpu']['core']['avg'] / len(return_data_dict['info'])
+        stat_pec_data['cpu']['node']['avg'] = stat_pec_data['cpu']['node']['avg'] / len(
+            return_data_dict['info'])
+        stat_pec_data['cpu']['core']['avg'] = stat_pec_data['cpu']['core']['avg'] / len(
+            return_data_dict['info'])
 
-        stat_pec_data['gpu']['node']['avg'] = stat_pec_data['gpu']['node']['avg'] / len(return_data_dict['info'])
-        stat_pec_data['gpu']['core']['avg'] = stat_pec_data['gpu']['core']['avg'] / len(return_data_dict['info'])
+        stat_pec_data['gpu']['node']['avg'] = stat_pec_data['gpu']['node']['avg'] / len(
+            return_data_dict['info'])
+        stat_pec_data['gpu']['core']['avg'] = stat_pec_data['gpu']['core']['avg'] / len(
+            return_data_dict['info'])
 
-        stat_pec_data['all']['node']['avg'] = stat_pec_data['all']['node']['avg'] / len(return_data_dict['info'])
-        stat_pec_data['all']['core']['avg'] = stat_pec_data['all']['core']['avg'] / len(return_data_dict['info'])
+        stat_pec_data['all']['node']['avg'] = stat_pec_data['all']['node']['avg'] / len(
+            return_data_dict['info'])
+        stat_pec_data['all']['core']['avg'] = stat_pec_data['all']['core']['avg'] / len(
+            return_data_dict['info'])
 
         return_data_dict['stat'] = stat_pec_data
         return return_data_dict
@@ -259,7 +267,7 @@ def get_queue_data(date_from, date_to):
 
         for job_info in job_res:
             return_data = {**job_info,
-                           'record_time': job_info['record_time'].strftime(time_format),
+                           'time': job_info['record_time'].strftime(time_format),
                            }
             return_data_dict['info'].append(return_data)
             # 计算cpu集群的任务、用户数量统计信息
@@ -281,13 +289,19 @@ def get_queue_data(date_from, date_to):
 
 
 def compute_queue_stat_avg_data(cluster_type, stat_pec_data, num):
-    stat_pec_data[cluster_type]['job']['total']['avg'] = stat_pec_data[cluster_type]['job']['total']['avg'] / num
-    stat_pec_data[cluster_type]['job']['running']['avg'] = stat_pec_data[cluster_type]['job']['running']['avg'] / num
-    stat_pec_data[cluster_type]['job']['waiting']['avg'] = stat_pec_data[cluster_type]['job']['waiting']['avg'] / num
+    stat_pec_data[cluster_type]['job']['total']['avg'] = \
+        stat_pec_data[cluster_type]['job']['total']['avg'] / num
+    stat_pec_data[cluster_type]['job']['running']['avg'] = \
+        stat_pec_data[cluster_type]['job']['running']['avg'] / num
+    stat_pec_data[cluster_type]['job']['waiting']['avg'] = \
+        stat_pec_data[cluster_type]['job']['waiting']['avg'] / num
 
-    stat_pec_data[cluster_type]['user']['total']['avg'] = stat_pec_data[cluster_type]['user']['total']['avg'] / num
-    stat_pec_data[cluster_type]['user']['running']['avg'] = stat_pec_data[cluster_type]['user']['running']['avg'] / num
-    stat_pec_data[cluster_type]['user']['waiting']['avg'] = stat_pec_data[cluster_type]['user']['waiting']['avg'] / num
+    stat_pec_data[cluster_type]['user']['total']['avg'] = \
+        stat_pec_data[cluster_type]['user']['total']['avg'] / num
+    stat_pec_data[cluster_type]['user']['running']['avg'] = \
+        stat_pec_data[cluster_type]['user']['running']['avg'] / num
+    stat_pec_data[cluster_type]['user']['waiting']['avg'] = \
+        stat_pec_data[cluster_type]['user']['waiting']['avg'] / num
 
 
 def compute_queue_stat_data(cluster_type, return_data, stat_pec_data):
@@ -321,12 +335,15 @@ def compute_queue_stat_user_or_job_data(cluster_type, data_type, return_data, st
     # 总计
     compute_state_stat_diff_type_data(cluster_type, 'total', data_type, return_data, stat_pec_data)
     # 等待
-    compute_state_stat_diff_type_data(cluster_type, 'waiting', data_type, return_data, stat_pec_data)
+    compute_state_stat_diff_type_data(cluster_type, 'waiting', data_type, return_data,
+                                      stat_pec_data)
     # 运行
-    compute_state_stat_diff_type_data(cluster_type, 'running', data_type, return_data, stat_pec_data)
+    compute_state_stat_diff_type_data(cluster_type, 'running', data_type, return_data,
+                                      stat_pec_data)
 
 
-def compute_state_stat_diff_type_data(cluster_type, state_type, data_type, return_data, stat_pec_data):
+def compute_state_stat_diff_type_data(cluster_type, state_type, data_type, return_data,
+                                      stat_pec_data):
     """
 
     :param cluster_type: 与compute_queue_stat_data函数中相同

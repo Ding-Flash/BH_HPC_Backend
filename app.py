@@ -1,5 +1,5 @@
 from flask import Flask
-
+from flask_cors import CORS
 from background.main import update_state
 from common import main_init
 from router.router import router
@@ -9,7 +9,7 @@ main_init.main_program_init()
 update_state()
 
 app = Flask(__name__)
-
+CORS(app, supports_credentials=True)
 #  加载路由
 router(app)
 

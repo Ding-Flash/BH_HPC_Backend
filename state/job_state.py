@@ -1,3 +1,6 @@
+import datetime
+
+
 class JobState:
     def __init__(self, job_name, account, user,
                  partition, qos, num_node,
@@ -35,9 +38,12 @@ class JobState:
             "num_node": self.num_node,
             "num_core": self.num_core,
             "state": self.state,
-            "time": self.get_time_delta_sec(),
+            "time_string": self.get_time_delta_sec(),
+            "time": self.time.total_seconds(),
             "des": self.des,
         }
 
     def get_time_delta_sec(self):
-        return self.time.total_seconds()
+        m, s = divmod(int(self.time.total_seconds()), 60)
+        h, m = divmod(m, 60)
+        return "{:0>2d}:{:0>2d}:{:0>2d}".format(h, m, s)

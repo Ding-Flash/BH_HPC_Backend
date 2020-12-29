@@ -1,3 +1,5 @@
+from config import DB_CONFIG
+
 node_history_table_sql = '''
 create table node_history
 (
@@ -72,7 +74,7 @@ def node_history_sql_gen(cpu_running_node, cpu_unavailable_node, cpu_total_node,
                          running_node, unavailable_node, total_node,
                          running_core, unavailable_core, total_core):
     return f'''
-                insert into node_history (
+                insert into {DB_CONFIG['history_node_table']} (
                 cpu_running_node, cpu_unavailable_node, cpu_total_node, 
                 cpu_running_core,cpu_unavailable_core, cpu_total_core, 
                 gpu_running_node, gpu_unavailable_node, gpu_total_node,
@@ -96,7 +98,7 @@ def job_history_sql_gen(all_waiting_user, all_running_user, all_total_user,
                         gpu_waiting_user, gpu_running_user, gpu_total_user,
                         gpu_running_job, gpu_waiting_job, gpu_total_job):
     return f'''
-                insert into job_history (
+                insert into {DB_CONFIG['history_queue_table']} (
                 all_waiting_user, all_running_user, all_total_user,
                 all_running_job, all_waiting_job, all_total_job,
                 cpu_waiting_user, cpu_running_user, cpu_total_user,
